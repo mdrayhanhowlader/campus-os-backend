@@ -1,0 +1,35 @@
+# dependencies
+node_modules/
+
+# environment variables
+.env
+.env.local
+.env.production
+.env.development
+
+# build output
+dist/
+build/
+
+# logs
+logs/
+*.log
+
+# runtime
+pids/
+*.pid
+*.seed
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Prisma generated client (regenerated on install)
+node_modules/.prisma/
+
+# test coverage
+coverage/
