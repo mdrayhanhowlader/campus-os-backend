@@ -248,6 +248,40 @@ enum PayrollStatus {
   CANCELLED
 }
 
+// ─── SaaS Subscription & Feature Flags ───────
+enum PlanTier {
+  TRIAL       // 14-day free, limited modules
+  STARTER     // small schools, core modules only
+  STANDARD    // mid-size, most modules
+  PREMIUM     // all modules + priority support
+  ENTERPRISE  // custom, unlimited
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  SUSPENDED   // payment overdue, read-only
+  EXPIRED
+  CANCELLED
+}
+
+enum ModuleKey {
+  TEACHER_PORTAL
+  STUDENT_PORTAL
+  PARENT_PORTAL
+  ACCOUNTANT_PORTAL
+  LIBRARIAN_PORTAL
+  TRANSPORT_MODULE
+  HOSTEL_MODULE
+  EXAM_MODULE
+  SYLLABUS_MODULE
+  PAYROLL_MODULE
+  ONLINE_FEE_PAYMENT
+  MESSAGING
+  ANNOUNCEMENTS
+  REPORT_CARDS
+  HALL_TICKETS
+}
+
 // ─────────────────────────────────────────────
 // SCHOOL & ORGANIZATION
 // ─────────────────────────────────────────────
@@ -284,11 +318,41 @@ model School {
   routes          Route[]
   hostels         Hostel[]
   settings        SchoolSettings?
+  subscription    SchoolSubscription?
   auditLogs       AuditLog[]
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
   @@index([code])
+}
+
+model SchoolSubscription {
+  id          String             @id @default(cuid())
+  schoolId    String             @unique
+  school      School             @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  plan        PlanTier           @default(TRIAL)
+  status      SubscriptionStatus @default(ACTIVE)
+  maxStudents Int                @default(200)
+  maxStaff    Int                @default(30)
+  billingEmail String?
+  trialEndsAt DateTime?
+  renewsAt    DateTime?
+  cancelledAt DateTime?
+  modules     SchoolModule[]
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+}
+
+model SchoolModule {
+  id             String             @id @default(cuid())
+  subscriptionId String
+  subscription   SchoolSubscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+  key            ModuleKey
+  enabled        Boolean            @default(true)
+  updatedAt      DateTime           @updatedAt
+
+  @@unique([subscriptionId, key])
+  @@index([subscriptionId, enabled])
 }
 
 model SchoolSettings {
